@@ -6,8 +6,10 @@ public class UserInputMono : MonoBehaviour {
 
     public ShipForcesData shipForcesData;
 
-    void Awake() {
+    public Transform waterJetTransform; // temp for testing forces
 
+    void Awake() {
+        //shipForcesData.waterJetTransform = waterJetTransform; 
     }
 
     void FixedUpdate() {
@@ -27,9 +29,9 @@ public class UserInputMono : MonoBehaviour {
             }
         }
         
-        //shipForcesData.horizontalInput = Input.GetAxis("Horizontal");
+        shipForcesData.horizontalInput = Input.GetAxis("Horizontal");
 
-        if (Input.GetKey("a")) {
+/*         if (Input.GetKey("a")) {
             shipForcesData.isSteeringLeft = true;
             //shipForcesData.horizontalInput = Input.GetAxis("Horizontal");
             shipForcesData.waterJetRotation_Y = shipForcesData.waterJetTransform.localEulerAngles.y + 2f;
@@ -43,7 +45,7 @@ public class UserInputMono : MonoBehaviour {
             shipForcesData.waterJetRotation_Y = shipForcesData.waterJetTransform.localEulerAngles.y - 2f;
         } else {
             shipForcesData.isSteeringRight = false;
-        }
+        } */
 
     }
 }
