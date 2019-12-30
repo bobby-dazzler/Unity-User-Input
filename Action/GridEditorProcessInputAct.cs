@@ -137,7 +137,7 @@ public class GridEditorProcessInputAct : Action {
 
 
     void ChangeAdditionalValue (MarchingPoint point, float value) {
-        point.RemoveValue (value);
+        point.AdditionalValue += value;
         pointsToCheck.Add(point);
     }
 

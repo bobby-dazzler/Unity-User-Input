@@ -88,13 +88,13 @@ public class UserInputMono : MonoBehaviour {
         if (callControllerUpdate == true) {
             if (gameInputData.isMouse0Up == true) {
                 gameInputData.isMouse0Up = false;
-                controller.CallCurrentStateActionAtIndex(1); // Debug Erosion action
+                controller.CallCurrentStateActionAtIndex(0); // Debug Erosion action
                 
             }
 
             if (gameInputData.isMouse1Up == true) {
                 gameInputData.isMouse1Up = false;
-                controller.CallCurrentStateActionAtIndex(2); // Debug Marching Points action
+                //controller.CallCurrentStateActionAtIndex(2); // Debug Marching Points action
             }
         }
     }
