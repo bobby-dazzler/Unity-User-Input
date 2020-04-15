@@ -1,0 +1,16 @@
+{
+    "name": "UnityUserInputReference",
+    "references": [
+        "GUID:9ed7ea06b2a7f46febdb1278548f49ff",
+        "GUID:829759957965eed40ba175f25887d3b2"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
