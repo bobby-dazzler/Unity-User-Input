@@ -9,21 +9,21 @@ public class ChangeTileTypeAct : Action {
     
     public GameInputData gameInputData;
 
-    public TileTypesRuntimeSet allTileTypes;
+    public TileFactory tileFactory;
 
     public override void Act (StateController controller) {
         GridTile tile;
         
         for (int i = 0; i < gameInputData.selectedTiles.Count; i++) {
-            if (allTileTypes.activeTileType.tileTypeId == 0)  {
+            if (tileFactory.activeTileType.tileTypeId == 0)  {
                 tile = gameInputData.selectedTiles[i];
             } else {
                 tile = gameInputData.selectedTiles[i].GetNeighbour(gameInputData.activeDirection);
             } 
 
-            if (tile.tileType.tileTypeId != allTileTypes.activeTileType.tileTypeId) {
+            if (tile.tileType.tileTypeId != tileFactory.activeTileType.tileTypeId) {
                 tile.rotation = gameInputData.activeRotation;
-                allTileTypes.ChangeTileType(tile, allTileTypes.activeTileType.tileTypeId, true);
+                tileFactory.ChangeTileType(tile, tileFactory.activeTileType.tileTypeId, true);
             }
 
         }

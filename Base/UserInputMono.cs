@@ -89,6 +89,16 @@ public class UserInputMono : MonoBehaviour {
             }
         } 
 
+        if (Input.GetKeyUp(KeyCode.Tab)) {
+            if (gameInputData.horizontalTileSelection == true) {
+                gameInputData.horizontalTileSelection = false;
+                gameInputData.verticalTileSelection = true;
+            } else {
+                gameInputData.horizontalTileSelection = true;
+                gameInputData.verticalTileSelection = false;
+            } 
+        }
+
         // Map Controls
 
         if (gameInputData.scrollWheelDelta != 0) {
@@ -105,36 +115,47 @@ public class UserInputMono : MonoBehaviour {
         // Calling the actions for each input
         //
 
+        // Called every frame
+        controller.CallCurrentStateActionAtIndex(0);
+
         if (callControllerUpdate == true) {
             if (gameInputData.isMouse0Down == true) {
                 gameInputData.isMouse0Down = false;
-                //controller.CallCurrentStateActionAtIndex(0); // Grid Debug Input
+                //controller.CallCurrentStateActionAtIndex(1); 
             }
             if (gameInputData.isMouse0 == true) {
                 gameInputData.isMouse0 = false;
-                controller.CallCurrentStateActionAtIndex(1); // SelectTilesAct
+                controller.CallCurrentStateActionAtIndex(2); 
             }
             if (gameInputData.isMouse0Up == true) {
                 gameInputData.isMouse0Up = false;
-                //controller.CallCurrentStateActionAtIndex(3); // ChangeTileTypeAct
+                //controller.CallCurrentStateActionAtIndex(3);
             } 
-
+            if (gameInputData.isMouse1Down == true) {
+                gameInputData.isMouse1Down = false;
+                //controller.CallCurrentStateActionAtIndex(4); 
+            }
+            if (gameInputData.isMouse1 == true) {
+                gameInputData.isMouse1 = false;
+                //controller.CallCurrentStateActionAtIndex(5); 
+            }
             if (gameInputData.isMouse1Up == true) {
                 gameInputData.isMouse1Up = false;
-                //controller.CallCurrentStateActionAtIndex(2); 
+                controller.CallCurrentStateActionAtIndex(6); 
             }
-
             if (gameInputData.isMouseScroll == true) {
                 gameInputData.isMouseScroll = false;
-                controller.CallCurrentStateActionAtIndex(0); // camera controller action
+                controller.CallCurrentStateActionAtIndex(7); 
             }
             if (gameInputData.isXZChanged == true) {
                 gameInputData.isXZChanged = false;
-                controller.CallCurrentStateActionAtIndex(0); // camera controller action
+                controller.CallCurrentStateActionAtIndex(7); 
+            }
+            if (gameInputData.isSpacebar == true) {
+                gameInputData.isSpacebar = false;
+                controller.CallCurrentStateActionAtIndex(8); 
             }
         }
-
-        
     }
 /* 
     Coord GetClosestCoordAtMousePosition() {
@@ -160,6 +181,7 @@ public class UserInputMono : MonoBehaviour {
         gameInputData.isMouseScroll = false;
         gameInputData.isLeftShift = false;
         gameInputData.isXZChanged = false;
+        gameInputData.isSpacebar = false;
     }
 
 }

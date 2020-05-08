@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Unity3DTileGrid;
+using Unity.Mathematics;
 
 [CreateAssetMenu(menuName="Input/Data/Game Input Data")]
 public class GameInputData : ScriptableObject {
@@ -16,6 +17,8 @@ public class GameInputData : ScriptableObject {
 
     public List<GridTile> selectedTiles;
 
+    public int minX, minY, minZ, maxX, maxY, maxZ; // selected tile boundaries
+
     public List<GridTile> previousSelectedTiles;
 
     public List<int> previousSelectedTileTypeIDs; // used when changing tile type back to their previous type
@@ -23,6 +26,14 @@ public class GameInputData : ScriptableObject {
     public GridDirection activeDirection; // used when building tiles in a direction
 
     public Vector3 activeRotation; // used when creating certain tiles in specific rotations e.g. wall tiles
+
+    public Vector3Int tileOffsetsToSelect;
+
+    public Vector3Int tileSelectionClamp;
+
+    public bool horizontalTileSelection;
+
+    public bool verticalTileSelection;
 
     [HideInInspector]
     public float scrollWheelDelta;
@@ -46,8 +57,22 @@ public class GameInputData : ScriptableObject {
     public bool isMouseScroll = false;
     [HideInInspector]   
     public bool isLeftShift = false;
-    [HideInInspector]
+    [HideInInspector]   
     public bool isXZChanged = false;
+    [HideInInspector]   
+    public bool isSpacebar = false;
+
+/*     public void SwitchSelectionAxis() {
+        int xTemp = tileOffsetsToSelect.x;
+        int zTemp = tileOffsetsToSelect.z;
+        tileOffsetsToSelect.x = zTemp;
+        tileSelectionClamp.z = xTemp;
+        
+        Vector3Int temp2 = tileSelectionClamp;
+        tileSelectionClamp.x = temp2.z;
+        tileSelectionClamp.y = temp2.y;
+        tileSelectionClamp.z = temp2.x; 
+    } */
 
     public void SetGridEditorDirection (int value) {
         if (value == 0) {
