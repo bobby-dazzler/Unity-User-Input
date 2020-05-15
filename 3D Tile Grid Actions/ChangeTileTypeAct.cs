@@ -15,7 +15,7 @@ public class ChangeTileTypeAct : Action {
         GridTile tile;
         
         for (int i = 0; i < gameInputData.selectedTiles.Count; i++) {
-            if (tileFactory.activeTileType.tileTypeId == 0)  {
+/*             if (tileFactory.activeTileType.tileTypeId == 0)  {
                 tile = gameInputData.selectedTiles[i];
             } else {
                 tile = gameInputData.selectedTiles[i].GetNeighbour(gameInputData.activeDirection);
@@ -24,7 +24,7 @@ public class ChangeTileTypeAct : Action {
             if (tile.tileType.tileTypeId != tileFactory.activeTileType.tileTypeId) {
                 tile.rotation = gameInputData.activeRotation;
                 tileFactory.ChangeTileType(tile, tileFactory.activeTileType.tileTypeId, true);
-            }
+            } */
 
         }
     }
