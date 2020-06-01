@@ -24,7 +24,9 @@ public class DisplayCurrentTile : Action {
     public override void Act(StateController controller) {
         for (int i = 0; i < enabledProjectors.Count; i++) {
             if (!enabledProjectors[i].isSelected) {
-                enabledProjectors[i].SetProjector(false, 1);
+                for (int d = 0; d < 6; d++) {
+                    enabledProjectors[i].SetProjector(false, d);
+                }
             }
         }
         enabledProjectors.Clear();
@@ -51,7 +53,7 @@ public class DisplayCurrentTile : Action {
                         for (int x = currentTile.worldCoord.x - xOffset; x <= currentTile.worldCoord.x + xOffset; x++) {
                             
                             GridTile neighbour = gridData.GetTileFromWorldCoord(new Coord(x, currentTile.worldCoord.y, z));
-                            DisplayTile(neighbour);
+                            DisplayTile(neighbour, gameInputData.currentFace);
                         }
                     }
 
@@ -61,8 +63,8 @@ public class DisplayCurrentTile : Action {
         }
     }
 
-    void DisplayTile (GridTile tile) {
-        tile.SetProjector(true, 1);
+    void DisplayTile (GridTile tile, GridDirection direction) {
+        tile.SetProjector(true, direction);
         enabledProjectors.Add(tile);
     }
 

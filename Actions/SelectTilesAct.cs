@@ -18,25 +18,23 @@ public class SelectTilesAct : Action {
         GridTile mouseDownTile = gridData.GetTileFromPosition(gameInputData.mouseDownPosition);
         GridTile currentTile = gridData.GetTileFromPosition(gameInputData.mouseCurrentPosition);
 
-        if (mouseDownTile != currentTile) {
+        if (mouseDownTile != currentTile || gameInputData.selectedTiles.Count == 0) {
 
             controller.CallCurrentStateActionAtIndex(6); // Deselect tiles            
             
-            //Coord mouseDownWorldCoord = gridData.LocalToWorldCoord(mouseDownTile.coord.x, mouseDownTile.coord.y, mouseDownTile.coord.z, mouseDownTile.chunk.coord);
-            //Coord currentWorldCoord = gridData.LocalToWorldCoord(currentTile.coord.x, currentTile.coord.y, currentTile.coord.z, currentTile.chunk.coord);
             Coord mouseDownWorldCoord = new Coord(mouseDownTile.worldCoord.x, mouseDownTile.worldCoord.y, mouseDownTile.worldCoord.z);
             Coord currentWorldCoord = new Coord(currentTile.worldCoord.x, currentTile.worldCoord.y, currentTile.worldCoord.z);
-            if (currentWorldCoord.x < mouseDownWorldCoord.x - gameInputData.tileSelectionClamp.x) {
-                currentWorldCoord.x =  mouseDownWorldCoord.x - gameInputData.tileSelectionClamp.x;
+            if (currentWorldCoord.x <= mouseDownWorldCoord.x - gameInputData.tileSelectionClamp.x) {
+                currentWorldCoord.x =  mouseDownWorldCoord.x - gameInputData.tileSelectionClamp.x + 1;
             }
-            if (currentWorldCoord.x > mouseDownWorldCoord.x + gameInputData.tileSelectionClamp.x) {
-                currentWorldCoord.x = mouseDownWorldCoord.x + gameInputData.tileSelectionClamp.x;
+            if (currentWorldCoord.x >= mouseDownWorldCoord.x + gameInputData.tileSelectionClamp.x - 1) {
+                currentWorldCoord.x = mouseDownWorldCoord.x + gameInputData.tileSelectionClamp.x - 1;
             }
-            if (currentWorldCoord.z < mouseDownWorldCoord.z - gameInputData.tileSelectionClamp.z) {
-                currentWorldCoord.z =  mouseDownWorldCoord.z - gameInputData.tileSelectionClamp.z;
+            if (currentWorldCoord.z <= mouseDownWorldCoord.z - gameInputData.tileSelectionClamp.z) {
+                currentWorldCoord.z = mouseDownWorldCoord.z - gameInputData.tileSelectionClamp.z + 1;
             }
-            if (currentWorldCoord.z > mouseDownWorldCoord.z + gameInputData.tileSelectionClamp.z) {
-                currentWorldCoord.z = mouseDownWorldCoord.z + gameInputData.tileSelectionClamp.z;
+            if (currentWorldCoord.z >= mouseDownWorldCoord.z + gameInputData.tileSelectionClamp.z - 1) {
+                currentWorldCoord.z = mouseDownWorldCoord.z + gameInputData.tileSelectionClamp.z - 1;
             }       
 
             gameInputData.minX = Mathf.Min(mouseDownWorldCoord.x - (gameInputData.tileOffsetsToSelect.x / 2), currentWorldCoord.x);
@@ -52,30 +50,12 @@ public class SelectTilesAct : Action {
                         Coord tileWorldCoord = new Coord(x,y,z);
                         GridTile tile = gridData.GetTileFromWorldCoord(tileWorldCoord);
                         gameInputData.selectedTiles.Add(tile);
-                        tile.SetProjector(true, 1);
+                        tile.SetProjector(true, (int)gameInputData.mouseDownFace);
                         tile.isSelected = true;
                     }
                 }
             } 
-    
-/*         int minX = Mathf.Min(mouseDownWorldCoord.x, currentWorldCoord.x);
-        int minY = Mathf.Min(mouseDownWorldCoord.y, currentWorldCoord.y);
-        int minZ = Mathf.Min(mouseDownWorldCoord.z, currentWorldCoord.z);
-        int maxX = Mathf.Max(mouseDownWorldCoord.x, currentWorldCoord.x);
-        int maxY = Mathf.Max(mouseDownWorldCoord.y, currentWorldCoord.y);
-        int maxZ = Mathf.Max(mouseDownWorldCoord.z, currentWorldCoord.z);
 
-        for (int y = minY; y <= maxY; y++) {
-            for (int z = minZ; z <= maxZ; z++) {
-                for (int x = minX; x <= maxX; x++) {
-                    Coord tileWorldCoord = new Coord(x,y,z);
-                    GridTile tile = gridData.GetTileFromWorldCoord(tileWorldCoord);
-                    gameInputData.selectedTiles.Add(tile);
-                    tile.SetProjector(true, 1);
-                    tile.isSelected = true;
-                }
-            }
-        } */
             previousTile = currentTile;
         }
     }

@@ -17,8 +17,13 @@ public class ControlCameraAction : Action {
     public float stickMaxZoom = -45f;
     public float swivelMinZoom = 90f;
     public float swivelMaxZoom = 45f;
+    public float rotationSpeed = 50f;
+    
+    
 
     float zoom = 1f;
+
+    
 
     public override void Act (StateController controller) {
         if (gameInputData.scrollWheelDelta != 0) {
@@ -26,6 +31,9 @@ public class ControlCameraAction : Action {
         }
         if(gameInputData.xDelta != 0f || gameInputData.zDelta != 0f) {
             AdjustPosition(gameInputData.xDelta, gameInputData.zDelta);
+        }
+        if (gameInputData.rotationDelta != 0f) {
+            AdjustRotation(gameInputData.rotationDelta);
         }
     }
 
@@ -44,13 +52,23 @@ public class ControlCameraAction : Action {
     }
 
     void AdjustPosition(float xDelta, float zDelta) {
-        Vector3 direction = new Vector3(gameInputData.xDelta, 0f, gameInputData.zDelta).normalized;
+        Vector3 direction = gameInputData.cameraTransform.localRotation * new Vector3(gameInputData.xDelta, 0f, gameInputData.zDelta).normalized;
         float damping = Mathf.Max(Mathf.Abs(xDelta), Mathf.Abs(zDelta));
         float distance = Mathf.Lerp(cameraMoveSpeedMinZoom, cameraMoveSpeedMaxZoom, zoom) * damping * Time.deltaTime;
 
         Vector3 position = gameInputData.cameraTransform.localPosition;
         position += direction * distance;
         gameInputData.cameraTransform.localPosition = ClampPosition(position);
+    }
+
+    void AdjustRotation(float delta) {
+        gameInputData.rotationAngle += delta * rotationSpeed * Time.deltaTime;
+        if (gameInputData.rotationAngle < 0f) {
+            gameInputData.rotationAngle += 360f;
+        } else if (gameInputData.rotationAngle >= 360f) {
+            gameInputData.rotationAngle -= 360f;
+        }
+        gameInputData.cameraTransform.localRotation = Quaternion.Euler(0f, gameInputData.rotationAngle, 0f);
     }
 
     Vector3 ClampPosition (Vector3 position) {

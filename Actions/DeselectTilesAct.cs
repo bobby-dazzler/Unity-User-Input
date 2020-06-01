@@ -10,7 +10,9 @@ public class DeselectTilesAct : Action {
 
     public override void Act (StateController controller) {
         for (int i = 0; i < gameInputData.selectedTiles.Count; i++) {
-            gameInputData.selectedTiles[i].SetProjector(false, 1);
+            for (int d = 0; d < 6; d++) {
+                gameInputData.selectedTiles[i].SetProjector(false, d);
+            }
             gameInputData.selectedTiles[i].isSelected = false;
         }
         gameInputData.selectedTiles.Clear();

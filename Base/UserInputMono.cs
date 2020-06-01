@@ -20,6 +20,8 @@ public class UserInputMono : MonoBehaviour {
         gameInputData.cameraStick = gameInputData.cameraSwivel.GetChild(0);
 
         gameInputData.selectedTiles  = new List<GridTile>();
+
+        gameInputData.rotationAngle = 0f;
         //gameInputData.previousSelectedTiles  = new List<GridTile>();
         //gameInputData.previousSelectedTileTypeIDs = new List<int>();
     }
@@ -35,8 +37,11 @@ public class UserInputMono : MonoBehaviour {
         gameInputData.scrollWheelDelta = Input.GetAxis("Mouse ScrollWheel");
         gameInputData.xDelta = Input.GetAxis("Horizontal");
         gameInputData.zDelta = Input.GetAxis("Vertical");
+        gameInputData.rotationDelta = Input.GetAxis("Rotation");
 
         gameInputData.mouseCurrentPosition = GetSurfacePositionAtMousePosition();
+        GetTileObjectAtMousePoition();
+        gameInputData.currentFace = GetFaceAtMousePosition();
 
         // If left mouse was pressed this frame
         if (Input.GetMouseButtonDown(0)) {
@@ -44,6 +49,7 @@ public class UserInputMono : MonoBehaviour {
 
             if (!EventSystem.current.IsPointerOverGameObject()) {
                 gameInputData.mouseDownPosition = GetSurfacePositionAtMousePosition();
+                gameInputData.mouseDownFace = GetFaceAtMousePosition();
             }
 
             callControllerUpdate = true;
@@ -54,7 +60,7 @@ public class UserInputMono : MonoBehaviour {
             if (!EventSystem.current.IsPointerOverGameObject()) {
                 gameInputData.isMouse0 = true;
 
-                gameInputData.mouseCurrentPosition = GetSurfacePositionAtMousePosition();
+                //gameInputData.mouseCurrentPosition = GetSurfacePositionAtMousePosition();
 
                 callControllerUpdate = true;
             } 
@@ -111,6 +117,11 @@ public class UserInputMono : MonoBehaviour {
             callControllerUpdate = true;
         }
 
+        if (gameInputData.rotationDelta != 0f) {
+            gameInputData.isRotationChanged = true;
+            callControllerUpdate = true;
+        }
+
         //
         // Calling the actions for each input
         //
@@ -129,7 +140,7 @@ public class UserInputMono : MonoBehaviour {
             }
             if (gameInputData.isMouse0Up == true) {
                 gameInputData.isMouse0Up = false;
-                //controller.CallCurrentStateActionAtIndex(3);
+                controller.CallCurrentStateActionAtIndex(3);
             } 
             if (gameInputData.isMouse1Down == true) {
                 gameInputData.isMouse1Down = false;
@@ -151,6 +162,10 @@ public class UserInputMono : MonoBehaviour {
                 gameInputData.isXZChanged = false;
                 controller.CallCurrentStateActionAtIndex(7); 
             }
+            if (gameInputData.isRotationChanged == true) {
+                gameInputData.isRotationChanged = false;
+                controller.CallCurrentStateActionAtIndex(7); 
+            }
             if (gameInputData.isSpacebar == true) {
                 gameInputData.isSpacebar = false;
                 controller.CallCurrentStateActionAtIndex(8); 
@@ -169,6 +184,45 @@ public class UserInputMono : MonoBehaviour {
             return hit.point;
         } 
         else return new Vector3(-1,-1,-1); // dont do this 
+    }
+
+    void GetTileObjectAtMousePoition () {
+        Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        if (Physics.Raycast(inputRay, out hit)) {
+            GridTileObject obj = hit.collider.transform.root.GetComponent<GridTileObject>();
+            if (obj != null) {
+                gameInputData.currentTileObject = obj;
+            } else {
+                gameInputData.currentTileObject = null;
+            }
+        } else {
+            gameInputData.currentTileObject = null;
+        }
+    }
+
+    GridDirection GetFaceAtMousePosition () {
+        GridDirection direction = GridDirection.Yplus;
+        Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        if (Physics.Raycast(inputRay, out hit)) {
+            //GridDirection direction;
+            // enums are non nullable, if this causes problems change gameInputData.currentFace to something other than a GridDirection
+            if (hit.collider.transform.name == "xPlus") {
+                direction = GridDirection.Xplus;
+            } else if (hit.collider.transform.name == "yPlus") {
+                direction = GridDirection.Yplus;
+            } else if (hit.collider.transform.name == "zPlus") {
+                direction = GridDirection.Zplus;
+            } else if (hit.collider.transform.name == "xMinus") {
+                direction = GridDirection.Xminus;
+            } else if (hit.collider.transform.name == "yMinus") {
+                direction = GridDirection.Yminus;
+            } else if (hit.collider.transform.name == "zMinus") {
+                direction = GridDirection.Zminus;
+            } 
+        }
+        return direction;
     }
 
     void SetAllChecksFalse() {
