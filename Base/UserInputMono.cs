@@ -1,241 +1,286 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Mathematics;
 using UnityEventsFramework;
 using UnityEngine.EventSystems;
 using Unity3DTileGrid;
 
-public class UserInputMono : MonoBehaviour {
+namespace UnityUserInput {
+    public class UserInputMono : MonoBehaviour {
 
-    public Transform cameraTransform;
+        public Transform cameraTransform;
 
-    public GameInputData gameInputData;
+        public GameInputData gameInputData;
 
-    StateController controller;
+        public GridData gridData;
 
-    void Awake () {
-        controller = GetComponent<StateController>();
-        gameInputData.cameraTransform = cameraTransform;
-        gameInputData.cameraSwivel = cameraTransform.GetChild(0);
-        gameInputData.cameraStick = gameInputData.cameraSwivel.GetChild(0);
+        public DisplayCurrentTile displayCurrentTile;
 
-        gameInputData.selectedTiles  = new List<GridTile>();
+        public DebugMarchingValues debugMarchingValues;
 
-        gameInputData.rotationAngle = 0f;
-        //gameInputData.previousSelectedTiles  = new List<GridTile>();
-        //gameInputData.previousSelectedTileTypeIDs = new List<int>();
-    }
+        public bool debugMode;
 
-    void Update () {
-        // Gets the input data
-        // Calls some action to check and process whatever input is being set
+        StateController controller;
 
-        bool callControllerUpdate = false;
-        SetAllChecksFalse(); // prevent anything being called accidentally
+        void Awake () {
+            controller = GetComponent<StateController>();
+            gameInputData.cameraTransform = cameraTransform;
+            gameInputData.cameraSwivel = cameraTransform.GetChild(0);
+            gameInputData.cameraStick = gameInputData.cameraSwivel.GetChild(0);
 
-        gameInputData.isLeftShift = Input.GetKeyDown(KeyCode.LeftShift);
-        gameInputData.scrollWheelDelta = Input.GetAxis("Mouse ScrollWheel");
-        gameInputData.xDelta = Input.GetAxis("Horizontal");
-        gameInputData.zDelta = Input.GetAxis("Vertical");
-        gameInputData.rotationDelta = Input.GetAxis("Rotation");
+            gameInputData.selectedTiles  = new List<GridTile>();
 
-        gameInputData.mouseCurrentPosition = GetSurfacePositionAtMousePosition();
-        GetTileObjectAtMousePoition();
-        gameInputData.currentFace = GetFaceAtMousePosition();
+            gameInputData.rotationAngle = 0f;
 
-        // If left mouse was pressed this frame
-        if (Input.GetMouseButtonDown(0)) {
-            gameInputData.isMouse0Down = true;
+            gameInputData.horizontalTileSelection = true;
+            gameInputData.verticalTileSelection = false;
 
-            if (!EventSystem.current.IsPointerOverGameObject()) {
-                gameInputData.mouseDownPosition = GetSurfacePositionAtMousePosition();
-                gameInputData.mouseDownFace = GetFaceAtMousePosition();
-            }
+            displayCurrentTile.SetTileSize(0);
+            //gameInputData.previousSelectedTiles  = new List<GridTile>();
+            //gameInputData.previousSelectedTileTypeIDs = new List<int>();
+        }
 
-            callControllerUpdate = true;
-        } 
+        void Update () {
+            // Gets the input data
+            // Calls some action to check and process whatever input is being set
 
-        // If left mouse is currently down
-        if (Input.GetMouseButton(0)) {
-            if (!EventSystem.current.IsPointerOverGameObject()) {
-                gameInputData.isMouse0 = true;
+            bool callControllerUpdate = false;
+            SetAllChecksFalse(); // prevent anything being called accidentally
 
-                //gameInputData.mouseCurrentPosition = GetSurfacePositionAtMousePosition();
+            gameInputData.isLeftShift = Input.GetKeyDown(KeyCode.LeftShift);
+            gameInputData.scrollWheelDelta = Input.GetAxis("Mouse ScrollWheel");
+            gameInputData.xDelta = Input.GetAxis("Horizontal");
+            gameInputData.zDelta = Input.GetAxis("Vertical");
+            gameInputData.rotationDelta = Input.GetAxis("Rotation");
+
+            gameInputData.mouseCurrentPosition = GetSurfacePositionAtMousePosition();
+            
+            GetObjectsAtMousePoition();
+            gameInputData.currentFace = GetFaceAtMousePosition();
+
+            // If left mouse was pressed this frame
+            if (Input.GetMouseButtonDown(0)) {
+                gameInputData.isMouse0Down = true;
+
+                if (!EventSystem.current.IsPointerOverGameObject()) {
+                    gameInputData.mouseDownPosition = GetSurfacePositionAtMousePosition();
+                    gameInputData.mouseDownFace = GetFaceAtMousePosition();
+                }
 
                 callControllerUpdate = true;
             } 
-        }
 
-        // If left mouse was released this frame
-        if (Input.GetMouseButtonUp(0)) {
-            if (!EventSystem.current.IsPointerOverGameObject()) {
-                gameInputData.isMouse0Up = true;
+            // If left mouse is currently down
+            if (Input.GetMouseButton(0)) {
+                if (!EventSystem.current.IsPointerOverGameObject()) {
+                    gameInputData.isMouse0 = true;
+
+                    //gameInputData.mouseCurrentPosition = GetSurfacePositionAtMousePosition();
+
+                    callControllerUpdate = true;
+                } 
+            }
+
+            // If left mouse was released this frame
+            if (Input.GetMouseButtonUp(0)) {
+                if (!EventSystem.current.IsPointerOverGameObject()) {
+                    gameInputData.isMouse0Up = true;
+                    callControllerUpdate = true;
+                }
+            } 
+
+            // If right mouse is currently down
+            if (Input.GetMouseButton(1)) {
+                if (!EventSystem.current.IsPointerOverGameObject()) {
+                    gameInputData.isMouse1 = true;
+                    callControllerUpdate = true; 
+                }
+            } 
+
+            // If right mouse was pressed this frame
+            if (Input.GetMouseButtonDown(1)) {
+
+            } 
+
+            // If right mouse was released this frame
+            if (Input.GetMouseButtonUp(1)) {
+                if (gameInputData.isMouse1Up == false) {
+                    gameInputData.isMouse1Up = true;
+                    //gameInputData.mousePosition = GetSurfacePositionAtMousePosition();
+                    callControllerUpdate = true; 
+                }
+            } 
+
+            // If spacebar was released this frame
+            if (Input.GetKeyUp(KeyCode.Space)) {
+                if (gameInputData.isSpacebar == false) {
+                    gameInputData.isSpacebar = true;
+                    callControllerUpdate = true; 
+                }
+            }
+
+            if (Input.GetKeyUp(KeyCode.Tab)) {
+                if (gameInputData.horizontalTileSelection == true) {
+                    gameInputData.horizontalTileSelection = false;
+                    gameInputData.verticalTileSelection = true;
+                } else {
+                    gameInputData.horizontalTileSelection = true;
+                    gameInputData.verticalTileSelection = false;
+                } 
+            }
+
+            // Map Controls
+
+            if (gameInputData.scrollWheelDelta != 0) {
+                gameInputData.isMouseScroll = true;
                 callControllerUpdate = true;
             }
-        } 
 
-        // If right mouse is currently down
-        if (Input.GetMouseButton(1)) {
-/*             gameInputData.isMouse1 = true;
-            gameInputData.mousePosition = GetSurfacePositionAtMousePosition();
-            callControllerUpdate = true; */
-        } 
-
-        // If right mouse was pressed this frame
-        if (Input.GetMouseButtonDown(1)) {
-
-        } 
-
-        // If right mouse was released this frame
-        if (Input.GetMouseButtonUp(1)) {
-            if (gameInputData.isMouse1Up == false) {
-                gameInputData.isMouse1Up = true;
-                //gameInputData.mousePosition = GetSurfacePositionAtMousePosition();
-                callControllerUpdate = true; 
+            if (gameInputData.xDelta != 0f || gameInputData.zDelta != 0f) {
+                gameInputData.isXZChanged = true;
+                callControllerUpdate = true;
             }
-        } 
 
-        if (Input.GetKeyUp(KeyCode.Tab)) {
-            if (gameInputData.horizontalTileSelection == true) {
-                gameInputData.horizontalTileSelection = false;
-                gameInputData.verticalTileSelection = true;
-            } else {
-                gameInputData.horizontalTileSelection = true;
-                gameInputData.verticalTileSelection = false;
+            if (gameInputData.rotationDelta != 0f) {
+                gameInputData.isRotationChanged = true;
+                callControllerUpdate = true;
+            }
+
+            //
+            // Calling the actions for each input
+            //
+
+            // Called every frame
+            CallControllerActionAtIndex(0);
+
+            if (callControllerUpdate == true) {
+                if (gameInputData.isMouse0Down == true) {
+                    gameInputData.isMouse0Down = false;
+                    //controller.CallCurrentStateActionAtIndex(1); 
+                }
+                if (gameInputData.isMouse0 == true) {
+                    gameInputData.isMouse0 = false;
+                    CallControllerActionAtIndex(2);
+                }
+                if (gameInputData.isMouse0Up == true) {
+                    gameInputData.isMouse0Up = false;
+                    CallControllerActionAtIndex(3);
+                } 
+                if (gameInputData.isMouse1Down == true) {
+                    gameInputData.isMouse1Down = false;
+                    CallControllerActionAtIndex(4);
+                }
+                if (gameInputData.isMouse1 == true) {
+                    gameInputData.isMouse1 = false;
+                    CallControllerActionAtIndex(5);
+                }
+                if (gameInputData.isMouse1Up == true) {
+                    gameInputData.isMouse1Up = false;
+                    CallControllerActionAtIndex(6);
+                }
+                if (gameInputData.isMouseScroll == true) {
+                    gameInputData.isMouseScroll = false;
+                    CallControllerActionAtIndex(7);
+                }
+                if (gameInputData.isXZChanged == true) {
+                    gameInputData.isXZChanged = false;
+                    CallControllerActionAtIndex(7);
+                }
+                if (gameInputData.isRotationChanged == true) {
+                    gameInputData.isRotationChanged = false;
+                    CallControllerActionAtIndex(7);
+                }
+                if (gameInputData.isSpacebar == true) {
+                    gameInputData.isSpacebar = false;
+                    CallControllerActionAtIndex(8);
+                    debugMarchingValues.GetValuesAtXZ(gameInputData.mouseCurrentPosition);
+                }
+            }
+        }
+
+        void CallControllerActionAtIndex (int index) {
+            if (controller.currentState.actions[index] != null) {
+                controller.CallCurrentStateActionAtIndex(index);
+            }
+        }
+
+        Vector3 GetSurfacePositionAtMousePosition() {
+            Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+            if (Physics.Raycast(inputRay, out hit)) {
+                return hit.point;
             } 
+            else return new Vector3(-1,-1,-1); // dont do this 
         }
 
-        // Map Controls
+        void GetObjectsAtMousePoition () {
+            Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+            if (Physics.Raycast(inputRay, out hit)) {
+                GridTileObject obj = hit.collider.transform.root.GetComponent<GridTileObject>();
+                if (obj != null) {
+                    gameInputData.mouseCurrentChunk = gridData.GetChunkFromPosition(gameInputData.mouseCurrentPosition);
+                } else {
+                    gameInputData.currentTileObject = null;
+                }
 
-        if (gameInputData.scrollWheelDelta != 0) {
-            gameInputData.isMouseScroll = true;
-            callControllerUpdate = true;
-        }
+                GridChunk chunk = gridData.GetChunkFromPosition(gameInputData.mouseCurrentPosition);
+                if (chunk != null) {
+                    gameInputData.mouseCurrentChunk = chunk;
+                } else {
+                    gameInputData.mouseCurrentChunk = null;
+                }
 
-        if (gameInputData.xDelta != 0f || gameInputData.zDelta != 0f) {
-            gameInputData.isXZChanged = true;
-            callControllerUpdate = true;
-        }
-
-        if (gameInputData.rotationDelta != 0f) {
-            gameInputData.isRotationChanged = true;
-            callControllerUpdate = true;
-        }
-
-        //
-        // Calling the actions for each input
-        //
-
-        // Called every frame
-        controller.CallCurrentStateActionAtIndex(0);
-
-        if (callControllerUpdate == true) {
-            if (gameInputData.isMouse0Down == true) {
-                gameInputData.isMouse0Down = false;
-                //controller.CallCurrentStateActionAtIndex(1); 
-            }
-            if (gameInputData.isMouse0 == true) {
-                gameInputData.isMouse0 = false;
-                controller.CallCurrentStateActionAtIndex(2); 
-            }
-            if (gameInputData.isMouse0Up == true) {
-                gameInputData.isMouse0Up = false;
-                controller.CallCurrentStateActionAtIndex(3);
-            } 
-            if (gameInputData.isMouse1Down == true) {
-                gameInputData.isMouse1Down = false;
-                //controller.CallCurrentStateActionAtIndex(4); 
-            }
-            if (gameInputData.isMouse1 == true) {
-                gameInputData.isMouse1 = false;
-                //controller.CallCurrentStateActionAtIndex(5); 
-            }
-            if (gameInputData.isMouse1Up == true) {
-                gameInputData.isMouse1Up = false;
-                controller.CallCurrentStateActionAtIndex(6); 
-            }
-            if (gameInputData.isMouseScroll == true) {
-                gameInputData.isMouseScroll = false;
-                controller.CallCurrentStateActionAtIndex(7); 
-            }
-            if (gameInputData.isXZChanged == true) {
-                gameInputData.isXZChanged = false;
-                controller.CallCurrentStateActionAtIndex(7); 
-            }
-            if (gameInputData.isRotationChanged == true) {
-                gameInputData.isRotationChanged = false;
-                controller.CallCurrentStateActionAtIndex(7); 
-            }
-            if (gameInputData.isSpacebar == true) {
-                gameInputData.isSpacebar = false;
-                controller.CallCurrentStateActionAtIndex(8); 
-            }
-        }
-    }
-/* 
-    Coord GetClosestCoordAtMousePosition() {
-
-    } */
-
-    Vector3 GetSurfacePositionAtMousePosition() {
-        Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-        if (Physics.Raycast(inputRay, out hit)) {
-            return hit.point;
-        } 
-        else return new Vector3(-1,-1,-1); // dont do this 
-    }
-
-    void GetTileObjectAtMousePoition () {
-        Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-        if (Physics.Raycast(inputRay, out hit)) {
-            GridTileObject obj = hit.collider.transform.root.GetComponent<GridTileObject>();
-            if (obj != null) {
-                gameInputData.currentTileObject = obj;
+                GridContentObject content = hit.collider.transform.GetComponentInParent<GridContentObject>();
+                if (content != null) {
+                    gameInputData.currentGridContentObject = content;
+                } else {
+                    gameInputData.currentGridContentObject = null;
+                }
             } else {
                 gameInputData.currentTileObject = null;
+                gameInputData.mouseCurrentChunk = null;
+                gameInputData.currentGridContentObject = null;
             }
-        } else {
-            gameInputData.currentTileObject = null;
         }
-    }
 
-    GridDirection GetFaceAtMousePosition () {
-        GridDirection direction = GridDirection.Yplus;
-        Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-        if (Physics.Raycast(inputRay, out hit)) {
-            //GridDirection direction;
-            // enums are non nullable, if this causes problems change gameInputData.currentFace to something other than a GridDirection
-            if (hit.collider.transform.name == "xPlus") {
-                direction = GridDirection.Xplus;
-            } else if (hit.collider.transform.name == "yPlus") {
-                direction = GridDirection.Yplus;
-            } else if (hit.collider.transform.name == "zPlus") {
-                direction = GridDirection.Zplus;
-            } else if (hit.collider.transform.name == "xMinus") {
-                direction = GridDirection.Xminus;
-            } else if (hit.collider.transform.name == "yMinus") {
-                direction = GridDirection.Yminus;
-            } else if (hit.collider.transform.name == "zMinus") {
-                direction = GridDirection.Zminus;
-            } 
+        GridDirection GetFaceAtMousePosition () {
+            GridDirection direction = GridDirection.Yplus;
+            Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+            if (Physics.Raycast(inputRay, out hit)) {
+                //GridDirection direction;
+                // enums are non nullable, if this causes problems change gameInputData.currentFace to something other than a GridDirection
+                if (hit.collider.transform.name == "xPlus") {
+                    direction = GridDirection.Xplus;
+                } else if (hit.collider.transform.name == "zPlus") {
+                    direction = GridDirection.Zplus;
+                } else if (hit.collider.transform.name == "xMinus") {
+                    direction = GridDirection.Xminus;
+                } else if (hit.collider.transform.name == "yMinus") {
+                    direction = GridDirection.Yminus;
+                } else if (hit.collider.transform.name == "zMinus") {
+                    direction = GridDirection.Zminus;
+                } else {
+                    direction = GridDirection.Yplus;
+                }
+            }
+            return direction;
         }
-        return direction;
-    }
 
-    void SetAllChecksFalse() {
-        gameInputData.isMouse0 = false;
-        gameInputData.isMouse0Down = false;
-        gameInputData.isMouse0Up = false;
-        gameInputData.isMouse1 = false;
-        gameInputData.isMouse1Down = false;
-        gameInputData.isMouse1Up = false;
-        gameInputData.isMouseScroll = false;
-        gameInputData.isLeftShift = false;
-        gameInputData.isXZChanged = false;
-        gameInputData.isSpacebar = false;
-    }
+        void SetAllChecksFalse() {
+            gameInputData.isMouse0 = false;
+            gameInputData.isMouse0Down = false;
+            gameInputData.isMouse0Up = false;
+            gameInputData.isMouse1 = false;
+            gameInputData.isMouse1Down = false;
+            gameInputData.isMouse1Up = false;
+            gameInputData.isMouseScroll = false;
+            gameInputData.isLeftShift = false;
+            gameInputData.isXZChanged = false;
+            gameInputData.isSpacebar = false;
+        }
 
+    }
 }
